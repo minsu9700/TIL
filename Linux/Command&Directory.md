@@ -85,7 +85,7 @@ file - determine file type (파일 종류 확인)
 
 ### 디렉터리 계층 구조
 
-<img src="Linux/collection/linux-filesystem.png" width="400" height="300">
+![linux-filesystem](https://user-images.githubusercontent.com/42503786/172382272-59cd596a-b824-46b9-86a8-ef348f9ec914.png)
 
 ### 디렉터리 주요 기능
 
