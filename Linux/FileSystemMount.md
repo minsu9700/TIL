@@ -257,6 +257,148 @@
 
 ![umount](https://user-images.githubusercontent.com/42503786/174578971-44911635-9c15-437e-8017-9d8ef8ad894d.png)
 
+### 여러 디스크를 하나처럼 사용하기
 
+#### LVM이란
+
+**독립적으로 구성된 디스크 파티션을 하나로 연결하여 한 파티션처럼 사용할 수 있도록 해주는 것**
+
+* pv(physical volume) : /dev/sdb1, /dev/sdc1 같은 실제 하드디스크 파티션
+* vg(volume group) : 여러 개의 pv를 하나로 묶은 것 예를들어 /dev/sdb1 /dev/sdc1이 GRP1이라는 그룹을 만들 때 GRP1이 VG임
+* LV(logical volume) : VG를 다시 적절한 크기의 파티션으로 나눌 때 각 파티션을 LV라고 함
+* PE(physical extent) : PV가 가진 일정한 블록
+* LE(logical extent) : LV가 가진 일정한 블록
+
+#### LVM 기본 개념
+
+![lvm](https://user-images.githubusercontent.com/42503786/174976097-eadbc260-0715-4117-90b7-08afc06fcde1.png)
+
+#### LVM 생성 과정
+
+![LVM생성](https://user-images.githubusercontent.com/42503786/174976469-37511086-1f65-4d56-bfd5-fc4a0631d61a.png)
+
+#### 기존 파일시스템 종류 변경하는 방법
+
+**/dev/sdb1 기존 파일시스템 83(Linux)에서 8e(Linux LVM)으로 변경하기**
+
+##### 1. fdisk 명령어 사용
+
+![1](https://user-images.githubusercontent.com/42503786/174977527-a504c624-f0aa-4952-9450-4dec1580902b.png)
+
+
+##### 2. p 옵션을 사용하여 파티션 테이블 출력
+
+![2](https://user-images.githubusercontent.com/42503786/174977700-8afe7fd0-f1a0-4118-8ce0-110054e0ff66.png)
+
+##### 3. t 옵션을 사용하여 파티션 타입 변경(8e -> Linux LVM)
+
+![3](https://user-images.githubusercontent.com/42503786/174977852-2e90e189-85d4-4165-8456-e266f6eef3a6.png)
+
+##### 4. 파티션 테이블 출력하고 w 옵션을 사용하여 저장하고 나가기
+
+![4](https://user-images.githubusercontent.com/42503786/174978020-6e78fa7d-e131-47aa-b397-444496a80798.png)
+
+
+#### pv 생성하기
+
+##### pvcreate 명령어를 사용하여 /dev/sdb1 /dev/sdb2에 pv 생성
+
+**만약 이런 에러가 나온다면 "sudo umount /dev/sdb1" 명령어 입력하여 해결**
+
+![pv](https://user-images.githubusercontent.com/42503786/174986846-eb4c1651-560e-406b-8cc4-a32238f0f028.png)
+
+**경고가 뜨는건 아직 해결 못함**
+
+![pv2](https://user-images.githubusercontent.com/42503786/174987285-a9f90106-50b7-44b0-9f9e-c5f69044aaff.png)
+
+![pv2-1](https://user-images.githubusercontent.com/42503786/174987336-a85e67ce-de47-4adf-bd95-c6463650405e.png)
+
+##### pvscan 명령어를 입력하여 pv 상태 확인
+
+![pv3](https://user-images.githubusercontent.com/42503786/174987555-39f2c08f-02a6-4b12-b513-34ffbc5a4a36.png)
+
+##### 두 pv를 통합해 vg 생성 : vg 이름 -> grp1
+
+![lv](https://user-images.githubusercontent.com/42503786/174987834-b5c2f625-2fce-4181-ad64-337b971ccd4c.png)
+
+##### vgchange 명령어를 입력하여 생성한 vg 활성화
+
+![lv 2](https://user-images.githubusercontent.com/42503786/174988152-60429109-7da0-4bab-8046-89b2a6963a30.png)
+
+##### 활성화된 vg grp1 상태를 vgdisplay 명령어를 입력하여 확인
+
+![lv3](https://user-images.githubusercontent.com/42503786/174988378-e504d918-9e0a-470b-a480-bc556792f90d.png)
+
+##### Total PE(pv가 가진 일정한 블록)은 총 248개 있으며 모두 합해 하나의 lv 생성
+
+![lv4](https://user-images.githubusercontent.com/42503786/174988820-0486159b-b1b5-4162-824d-8b3acab2cafb.png)
+
+##### 생성한 lv 상태 확인하기
+
+![lv5](https://user-images.githubusercontent.com/42503786/174988977-b1db514a-ad96-4201-a98d-ed5966c0f431.png)
+
+##### lv mylvm1에 ext4 파일시스템 생성하기 (장치명은 /dev/grp1/mylvm1)
+
+![lv6](https://user-images.githubusercontent.com/42503786/174989238-0d5555a4-e123-43d2-9354-05f72330ec73.png)
+
+##### lv를 /mnt/lvm 디렉터리에 마운트하고 파일 복사해보기
+
+![lv result](https://user-images.githubusercontent.com/42503786/174989688-f2c80ec7-caed-4374-a258-b80bf2f1e860.png)
+
+***
+
+##  디스크 관리
+***
+
+### 디스크 사용량 확인하기
+
+**df(disk free) 명령어를 입력하여 디스크의 남은 공간에 대한 정보 출력**
+
+![df](https://user-images.githubusercontent.com/42503786/174990282-06aa11c8-621f-4ef7-93a9-8d4f20608f65.png)
+
+**df명령으로 출력되는 항목**
+
+* 파일 시스템 장치명
+* 파일 시스템 전체 용량
+* 파일 시스템 사용량
+* 파일 시스템의 사용가능한 남은 용량
+* 퍼센트로 나타낸 용량
+* 마운트 포인트
+
+**du 명령어를 입력하여 디스크의 사용 공간에 대한 정보 출력**
+
+![du](https://user-images.githubusercontent.com/42503786/174990723-10db43cc-9b09-48e1-8a75-e3982b586ac9.png)
+***
+
+### 파일 시스템 검사하고 복구하기
+
+**파일 시스템은 부적절한 시스템 종료나 전원의 불안정, 소프트웨어 오류, 하드웨어 오작동 등 다양한 이유로 손상될 수 있음**
+**손상된 파일 시스템 용량을 확인해야 할 뿐만 아니라 파일 시스템의 상태를 점검하고 문제가 있을 때 복구해야 함**
+
+#### fsck 명령으로 파일 시스템 검사하기
+
+**fsck 명령으로 /dev/sdc1 파일 시스템 검사하기
+
+![fsck](https://user-images.githubusercontent.com/42503786/174991617-a342ff53-1200-408a-9d30-03e0118d2a72.png)
+
+**아직 사용한 적이 없어 파일시스템의 상태가 깨끗하다고 출력됨**
+
+#### e2fsck 명령으로 파일 시스템 검사하기
+
+**e2fsck 명령은 fsck 명령처럼 inode 및 블록, 디렉터리, 파일 링크 등을 검사하고 필요시 복구 작업 수행(건드린적이 없어 깨끗하다고 출력됨)**
+
+![e2fsck](https://user-images.githubusercontent.com/42503786/174992125-d00c1b85-e160-4719-a752-7d7b0e40ec19.png)
+
+#### badblocks 명령을 통해 배드 블록 검사하기
+
+**디스크에 발생하는 심각한 문제 중 하나는 배드 블록으로 인한 데이터 유실**
+**따라서 배드 블록을 검사하는 것도 중요함 -v 옵션을 사용하여 자세히 출력**
+
+![badblocks](https://user-images.githubusercontent.com/42503786/174992506-c2561627-3318-46b1-af91-5df75b5eb805.png)
+
+
+
+* 현재 디렉터리와 서브 디렉터리, 파일 용량 출력(기본 단위 KB)
+* 가장 마지막에 있는 현재 디렉터리(.)의 크기가 해당 디렉터리 전체의 디스크 사용량
 
 
